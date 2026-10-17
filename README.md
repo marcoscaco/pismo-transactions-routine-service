@@ -127,3 +127,9 @@ BASE_URL=https://api-homologacao.empresa.com go test -run TestHealthCheckE2E -v
 # Contra produção
 BASE_URL=https://api.empresa.com go test -run TestHealthCheckE2E -v
 ```
+
+
+## Contribuidores
+
+- **Marcos Antonio Cordovil de Oliveira** (Caco): Principal contribuidor, arquitetura da solução e implementação.
+- **Diversas ferramentas de IA generativa** (Vários modelos): Usadas principalmente na geração de testes.
