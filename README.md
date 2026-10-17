@@ -48,7 +48,8 @@ O serviço inicia um servidor HTTP Gin na porta **8080** e expõe o endpoint `/h
 | `make run` | Inicia o serviço em modo de desenvolvimento |
 | `make tidy` | Limpa dependências não utilizadas (`go mod tidy`) |
 | `make fmt` | Formata o código com `gofmt` |
-| `make test` | Executa os testes e gera relatório de cobertura |
+| `make test` | Executa os testes de unidade e gera relatório de cobertura |
+| `make test-e2e` | Executa os testes de integração E2E (contra `BASE_URL`) |
 
 ### Verificando a Saúde
 
