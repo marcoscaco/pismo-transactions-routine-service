@@ -13,6 +13,10 @@ pismo-transactions-routine-service/
     │   └── main.go            # Servidor HTTP (Gin) + health check
     ├── go.mod                 # Definição do módulo Go
     ├── go.sum                 # Checksums de dependências
+    ├── tests/                 # Testes
+    │   └── integration/       # Testes de integração E2E
+    │       └── healthcheck_e2e_test.go
+    └── Makefile               # Comandos de conveniência
 ```
 
 ## Como Executar
@@ -81,3 +85,38 @@ Isso gera um relatório de cobertura em `coverage.out` e exibe um HTML com `go t
 - **Linguagem**: Go 1.25+
 - **Framework**: Gin (HTTP web framework)
 - **Finalidade**: Gerenciar o ciclo de vida de contas e transações
+
+## Testes E2E Blackbox
+
+Os testes de integração E2E são localizados em `app/tests/integration/` e seguem um modelo **blackbox**: eles não iniciam o próprio servidor, mas fazem requests HTTP reais contra um serviço externo configurado via variável de ambiente. Isso permite reutilizar os mesmos testes contra qualquer ambiente (desenvolvimento, homologação, produção) sem modificações.
+
+### Configuração
+
+O teste de healthcheck usa uma única variável de ambiente:
+
+- **`BASE_URL`**: Endpoint base do serviço (padrão: `http://localhost:8080`)
+  - Exemplos: `http://localhost:8080`, `http://api-homologacao.empresa.com`, `http://meu-servico:80`
+
+### Execução
+
+```bash
+# Rodar o serviço
+cd app
+make run
+
+# Verificar healthcheck
+curl http://localhost:8080/health
+
+# Executar testes E2E
+BASE_URL=http://localhost:8080 go test -run TestHealthCheckE2E -v
+```
+
+### Contra Outros Ambientes
+
+```bash
+# Contra homologação
+BASE_URL=https://api-homologacao.empresa.com go test -run TestHealthCheckE2E -v
+
+# Contra produção
+BASE_URL=https://api.empresa.com go test -run TestHealthCheckE2E -v
+```
