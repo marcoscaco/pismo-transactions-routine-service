@@ -1,4 +1,4 @@
-module github.com/pismo/transactions-routine-service
+module github.com/marcoscaco/pismo-transactions-routine-service
 
 go 1.25.0
 
