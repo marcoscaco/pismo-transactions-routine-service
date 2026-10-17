@@ -10,7 +10,13 @@ pismo-transactions-routine-service/
 ├── README.md
 └── app/                       # Código da aplicação
     ├── cmd/                   # Pontos de entrada
-    │   └── main.go            # Servidor HTTP (Gin) + health check
+    │   └── main.go            # Wiring: handlers, router e servidor HTTP
+    ├── internal/
+    │   └── adapter/
+    │       └── httpapi/       # Adapter HTTP (Gin)
+    │           ├── health_handler.go
+    │           ├── health_handler_test.go
+    │           └── router.go
     ├── go.mod                 # Definição do módulo Go
     ├── go.sum                 # Checksums de dependências
     ├── tests/                 # Testes
