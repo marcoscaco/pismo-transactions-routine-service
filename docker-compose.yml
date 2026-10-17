@@ -10,3 +10,50 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      - otel-collector
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    hostname: otel-collector
+    command: ["--config=env:OTEL_CONFIG"]
+    environment:
+      OTEL_CONFIG: |
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+        processors:
+          batch:
+        exporters:
+          prometheus:
+            endpoint: 0.0.0.0:8889
+        service:
+          pipelines:
+            metrics:
+              receivers: [otlp]
+              processors: [batch]
+              exporters: [prometheus]
+    ports:
+      - "4317:4317"
+      - "8889:8889"
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "global:
+          scrape_interval: 5s
+        scrape_configs:
+          - job_name: 'otel-collector'
+            static_configs:
+              - targets: ['otel-collector:8889']" > /tmp/prometheus.yml && \
+        /bin/prometheus --config.file=/tmp/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
