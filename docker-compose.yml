@@ -33,6 +33,10 @@ services:
             verbosity: detailed
           prometheus:
             endpoint: 0.0.0.0:8889
+          otlp/jaeger:
+            endpoint: jaeger:4317
+            tls:
+              insecure: true
         service:
           pipelines:
             metrics:
@@ -41,7 +45,8 @@ services:
               exporters: [prometheus, debug]
             traces:
               receivers: [otlp]
-              exporters: [debug]
+              processors: [batch]
+              exporters: [otlp/jaeger, debug]
     ports:
       - "4317:4317"
       - "8889:8889"
@@ -60,5 +65,14 @@ services:
         /bin/prometheus --config.file=/tmp/prometheus.yml
     ports:
       - "9090:9090"
+    depends_on:
+      - otel-collector
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Interface Web
+      - "4317"       # OTLP gRPC receptor interno
     depends_on:
       - otel-collector
