@@ -7,9 +7,9 @@ import (
 
 // TransactionDTO representa os dados de uma transação.
 type TransactionDTO struct {
-	ID            int     `json:"id"`
-	AccountID     int     `json:"account_id"`
-	OperationType int     `json:"operation_type_id"`
+	ID            int64           `json:"id"`
+	AccountID     int64           `json:"account_id"`
+	OperationType int64           `json:"operation_type_id"`
 	Amount        decimal.Decimal `json:"amount"`
-	EventDate     string  `json:"event_date"`
+	EventDate     string          `json:"event_date"`
 }

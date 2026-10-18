@@ -2,8 +2,8 @@
 package entity
 
 import (
-	"time"
 	"github.com/shopspring/decimal"
+	"time"
 )
 
 // Transaction representa uma transação no sistema.

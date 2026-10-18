@@ -10,7 +10,7 @@ import (
 // AccountUseCase é a interface que define os métodos para manipulação de contas.
 type AccountUseCase interface {
 	CreateAccount(ctx context.Context, document string) (*entity.Account, error)
-	GetAccountByID(ctx context.Context, id int) (*entity.Account, error)
+	GetAccountByID(ctx context.Context, id int64) (*entity.Account, error)
 }
 
 // accountUseCase é a implementação da interface AccountUseCase.
@@ -34,7 +34,7 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 }
 
 // GetAccountByID retorna uma conta pelo seu ID.
-func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int) (*entity.Account, error) {
+func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity.Account, error) {
 	// #TODO: Implementar lógica para buscar a conta pelo ID no repositório.
 	return nil, nil
 }

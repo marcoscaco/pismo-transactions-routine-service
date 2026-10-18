@@ -12,7 +12,7 @@ type TransactionsRepository interface {
 	CreateTransaction(ctx context.Context, transaction *entity.Transaction) error
 
 	// GetTransactionByID recupera uma transação pelo seu ID.
-	GetTransactionByID(ctx context.Context, accountID int64) (*entity.Transaction, error)
+	GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error)
 
 	// GetTransactionsByAccountID recupera todas as transações associadas a uma conta específica.
 	GetTransactionsByAccountID(ctx context.Context, accountID int64) ([]*entity.Transaction, error)

@@ -3,6 +3,6 @@ package entity
 
 // OperationType representa um tipo de operação no sistema.
 type OperationType struct {
-	ID   int
+	ID          int
 	Description string
 }
