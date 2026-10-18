@@ -7,6 +7,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
@@ -42,8 +43,8 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*entity.Acco
 	account := &entity.Account{}
 	err := row.Scan(&account.ID, &account.Document, &account.CreatedAt)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found") // Conta não encontrada
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrAccountNotFound
 		}
 		return nil, err
 	}

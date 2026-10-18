@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"sync"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
@@ -44,7 +44,7 @@ func (r *FakeAccountRepository) GetByID(ctx context.Context, id int64) (*entity.
 
 	account, exists := r.accounts[id]
 	if !exists {
-		return nil, errors.New("account not found")
+		return nil, domain.ErrAccountNotFound
 	}
 
 	return account, nil
@@ -82,7 +82,7 @@ func (r *FakeTransactionRepository) GetTransactionByID(ctx context.Context, tran
 
 	transaction, exists := r.transactions[transactionID]
 	if !exists {
-		return nil, errors.New("transaction not found")
+		return nil, domain.ErrTransactionNotFound
 	}
 
 	return transaction, nil

@@ -33,7 +33,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 
 	account, err := h.accountUseCase.CreateAccount(c.Request.Context(), request.Document)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeUseCaseError(c, err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 
 	account, err := h.accountUseCase.GetAccountByID(c.Request.Context(), accountID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeUseCaseError(c, err)
 		return
 	}
 	if account == nil {

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
@@ -42,8 +43,8 @@ func (r *TransactionRepository) GetTransactionByID(ctx context.Context, transact
 	transaction := &entity.Transaction{}
 	err := row.Scan(&transaction.ID, &transaction.AccountID, &transaction.OperationType, &transaction.Amount, &transaction.EventDate)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("transaction not found") // Transação não encontrada
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrTransactionNotFound
 		}
 		return nil, err
 	}
@@ -55,14 +56,11 @@ func (r *TransactionRepository) GetTransactionsByAccountID(ctx context.Context, 
 	query := "SELECT id, account_id, operation_type_id, amount, event_date FROM transactions_operations WHERE account_id = $1"
 	rows, err := r.db.QueryContext(ctx, query, accountID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("account not found") // conta não encontrada
-		}
 		return nil, err
 	}
 	defer rows.Close()
 
-	var transactions []*entity.Transaction
+	transactions := make([]*entity.Transaction, 0)
 	for rows.Next() {
 		transaction := &entity.Transaction{}
 		err := rows.Scan(&transaction.ID, &transaction.AccountID, &transaction.OperationType, &transaction.Amount, &transaction.EventDate)

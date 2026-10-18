@@ -3,9 +3,9 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 )
@@ -33,7 +33,7 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 
 	// validar se o documento é válido
 	if document == "" {
-		return nil, errors.New("document cannot be empty") // Documento vazio
+		return nil, domain.ErrInvalidDocument
 	}
 
 	account := &entity.Account{
@@ -56,7 +56,7 @@ func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity
 
 	// validar se o ID é válido
 	if id <= 0 {
-		return nil, errors.New("invalid account ID") // ID inválido
+		return nil, domain.ErrInvalidAccountID
 	}
 
 	account, err := uc.accountRepository.GetByID(ctx, id)
@@ -65,7 +65,7 @@ func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity
 	}
 
 	if account == nil {
-		return nil, errors.New("account not found") // Conta não encontrada
+		return nil, domain.ErrAccountNotFound
 	}
 
 	return account, nil

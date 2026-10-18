@@ -3,9 +3,9 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/shopspring/decimal"
@@ -35,17 +35,17 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 
 	// valida accountID
 	if accountID <= 0 {
-		return nil, errors.New("invalid account ID") // ID inválido
+		return nil, domain.ErrInvalidAccountID
 	}
 
 	// valida amount
 	if amount.LessThanOrEqual(decimal.Zero) {
-		return nil, errors.New("amount must be greater than zero") // Valor inválido
+		return nil, domain.ErrInvalidTransactionAmount
 	}
 
 	// valida operationTypeId
 	if operationTypeId <= 0 {
-		return nil, errors.New("invalid operation type ID") // ID de tipo de operação inválido
+		return nil, domain.ErrInvalidOperationTypeID
 	}
 
 	transaction := &entity.Transaction{
@@ -62,6 +62,8 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 	return transaction, nil
 }
 func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
-	// #TODO: Implementar lógica para buscar a transação pelo ID no repositório.
+	if transactionID <= 0 {
+		return nil, domain.ErrInvalidTransactionID
+	}
 	return uc.transactionRepository.GetTransactionByID(ctx, transactionID)
 }
