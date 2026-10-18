@@ -3,8 +3,8 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi/dtos"
@@ -49,7 +49,8 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 	idParam := c.Param("id")
 	var accountID int64
-	_, err := fmt.Sscan(idParam, &accountID)
+	var err error
+	accountID, err = strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account ID"})
 		return
