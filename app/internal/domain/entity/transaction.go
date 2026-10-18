@@ -3,13 +3,14 @@ package entity
 
 import (
 	"time"
+	"github.com/shopspring/decimal"
 )
 
 // Transaction representa uma transação no sistema.
 type Transaction struct {
 	ID            int
-	AccountID     int
+	AccountID     int64
 	OperationType int
-	Amount        float64
+	Amount        decimal.Decimal
 	EventDate     time.Time
 }

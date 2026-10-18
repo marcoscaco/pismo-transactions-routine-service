@@ -2,17 +2,18 @@
 package repository
 
 import (
-	"app/internal/domain/entity"
+	"context"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
 // TransactionsRepository define os métodos para interagir com o repositório de transações.
 type TransactionsRepository interface {
 	// CreateTransaction cria uma nova transação no repositório.
-	CreateTransaction(transaction *entity.Transaction) error
+	CreateTransaction(ctx context.Context, transaction *entity.Transaction) error
 
 	// GetTransactionByID recupera uma transação pelo seu ID.
-	GetTransactionByID(id int) (*entity.Transaction, error)
+	GetTransactionByID(ctx context.Context, accountID int64) (*entity.Transaction, error)
 
 	// GetTransactionsByAccountID recupera todas as transações associadas a uma conta específica.
-	GetTransactionsByAccountID(accountID int) ([]*entity.Transaction, error)
+	GetTransactionsByAccountID(ctx context.Context, accountID int64) ([]*entity.Transaction, error)
 }
