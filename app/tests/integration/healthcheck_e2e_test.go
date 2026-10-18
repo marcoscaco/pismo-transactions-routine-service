@@ -3,8 +3,9 @@ package integration
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"testing"
+
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/platform/env"
 )
 
 // healthResponse represents the expected payload returned by the /health endpoint.
@@ -23,7 +24,7 @@ type healthResponse struct {
 //   - BASE_URL: the base URL of the service (default: "http://localhost:8080")
 //     Example: "https://api.example.com", "http://localhost:8080", "http://my-service:80"
 func TestHealthCheckE2E(t *testing.T) {
-	baseURL := getEnvOrDefault("BASE_URL", "http://localhost:8080")
+	baseURL := env.OrDefault("BASE_URL", "http://localhost:8080")
 
 	t.Logf("Testing healthcheck against: %s/health", baseURL)
 
@@ -55,12 +56,4 @@ func TestHealthCheckE2E(t *testing.T) {
 	if body.Status != "ok" {
 		t.Errorf("expected status %q, got %q", "ok", body.Status)
 	}
-}
-
-// getEnvOrDefault returns the env var value or the default if empty.
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }

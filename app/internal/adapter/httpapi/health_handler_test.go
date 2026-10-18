@@ -13,7 +13,7 @@ import (
 func TestRouterHealthCheck(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	router := NewRouter(Handlers{Health: NewHealthHandler()})
+	router := NewRouter(Handlers{Health: NewHealthHandler()}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()

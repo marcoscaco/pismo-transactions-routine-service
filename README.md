@@ -39,7 +39,7 @@ cd app
 make run
 ```
 
-O serviço inicia um servidor HTTP Gin na porta **8080** e expõe o endpoint `/health` para verificação de saúde.
+O serviço inicia um servidor HTTP Gin na porta **8080** (configurável via variável de ambiente `PORT`) e expõe o endpoint `/health` para verificação de saúde.
 
 ### Comandos Disponíveis
 
