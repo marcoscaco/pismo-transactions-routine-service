@@ -3,6 +3,7 @@ package usecase
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
@@ -33,6 +34,11 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 
 	// validar se o documento é válido
 	if document == "" {
+		return nil, domain.ErrInvalidDocument
+	}
+
+	// validar que nao sao apenas espaços em branco
+	if strings.TrimSpace(document) == "" {
 		return nil, domain.ErrInvalidDocument
 	}
 
