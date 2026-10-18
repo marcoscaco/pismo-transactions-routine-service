@@ -3,6 +3,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -29,6 +30,12 @@ func NewAccountUseCase(accountRepository repository.AccountsRepository) AccountU
 
 // CreateAccount cria uma nova conta com o documento fornecido.
 func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*entity.Account, error) {
+
+	// validar se o documento é válido
+	if document == "" {
+		return nil, errors.New("document cannot be empty") // Documento vazio
+	}
+
 	account := &entity.Account{
 		Document:  document,
 		CreatedAt: time.Now(),
@@ -46,13 +53,19 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 // GetAccountByID retorna uma conta pelo seu ID.
 func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity.Account, error) {
 	// implementa a busca da conta pelo ID no repositório
+
+	// validar se o ID é válido
+	if id <= 0 {
+		return nil, errors.New("invalid account ID") // ID inválido
+	}
+
 	account, err := uc.accountRepository.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	if account == nil {
-		return nil, nil // Conta não encontrada
+		return nil, errors.New("account not found") // Conta não encontrada
 	}
 
 	return account, nil

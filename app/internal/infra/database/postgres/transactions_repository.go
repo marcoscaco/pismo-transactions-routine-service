@@ -4,6 +4,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -42,7 +43,7 @@ func (r *TransactionRepository) GetTransactionByID(ctx context.Context, transact
 	err := row.Scan(&transaction.ID, &transaction.AccountID, &transaction.OperationType, &transaction.Amount, &transaction.EventDate)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Transação não encontrada
+			return nil, errors.New("transaction not found") // Transação não encontrada
 		}
 		return nil, err
 	}
@@ -54,6 +55,9 @@ func (r *TransactionRepository) GetTransactionsByAccountID(ctx context.Context, 
 	query := "SELECT id, account_id, operation_type_id, amount, event_date FROM transactions_operations WHERE account_id = $1"
 	rows, err := r.db.QueryContext(ctx, query, accountID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("account not found") // conta não encontrada
+		}
 		return nil, err
 	}
 	defer rows.Close()

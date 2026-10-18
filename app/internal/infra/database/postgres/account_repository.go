@@ -4,6 +4,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -42,7 +43,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*entity.Acco
 	err := row.Scan(&account.ID, &account.Document, &account.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Conta não encontrada
+			return nil, errors.New("account not found") // Conta não encontrada
 		}
 		return nil, err
 	}

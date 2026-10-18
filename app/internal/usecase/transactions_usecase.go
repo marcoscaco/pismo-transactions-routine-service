@@ -3,6 +3,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -31,6 +32,22 @@ func NewTransactionUseCase(transactionRepository repository.TransactionsReposito
 
 // CreateTransaction cria uma nova transação com os parâmetros fornecidos.
 func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int64) (*entity.Transaction, error) {
+
+	// valida accountID
+	if accountID <= 0 {
+		return nil, errors.New("invalid account ID") // ID inválido
+	}
+
+	// valida amount
+	if amount.LessThanOrEqual(decimal.Zero) {
+		return nil, errors.New("amount must be greater than zero") // Valor inválido
+	}
+
+	// valida operationTypeId
+	if operationTypeId <= 0 {
+		return nil, errors.New("invalid operation type ID") // ID de tipo de operação inválido
+	}
+
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
 		Amount:        amount,
