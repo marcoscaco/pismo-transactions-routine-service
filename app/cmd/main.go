@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/infra/database/postgres"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/infra/telemetry"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/platform/env"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/usecase"
@@ -32,8 +33,23 @@ func main() {
 		log.Fatalf("falha ao criar instrumentos de métrica: %v", err)
 	}
 
-	// setup/wiring dos UseCases e Handlers
-	accountUseCase := usecase.NewAccountUseCase()
+	// Configuração do banco de dados PostgreSQL
+	// nunca usariamos valores hardcoded em produção, mas para fins de teste e desenvolvimento, vamos usar valores default
+	sqlDB, err := postgres.NewPostgresDB(postgres.Config{
+		Host:     env.OrDefault("DB_HOST", "localhost"),
+		Port:     env.OrDefault("DB_PORT", "5432"),
+		User:     env.OrDefault("DB_USER", "pismo"),
+		Password: env.OrDefault("DB_PASSWORD", "pismo_pass"),
+		DBName:   env.OrDefault("DB_NAME", "pismo_db"),
+		SSLMode:  env.OrDefault("DB_SSLMODE", "disable"),
+	})
+	if err != nil {
+		log.Fatalf("falha ao conectar ao banco de dados: %v", err)
+	}
+	defer sqlDB.Close()
+
+	accountRepository := postgres.NewAccountRepository(sqlDB)
+	accountUseCase := usecase.NewAccountUseCase(accountRepository)
 	accountHandler := httpapi.NewAccountHandler(accountUseCase)
 
 	transactionUseCase := usecase.NewTransactionUseCase()

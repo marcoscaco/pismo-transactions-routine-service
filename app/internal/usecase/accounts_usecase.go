@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 )
 
 // AccountUseCase é a interface que define os métodos para manipulação de contas.
@@ -17,11 +18,14 @@ type AccountUseCase interface {
 // accountUseCase é a implementação da interface AccountUseCase.
 type accountUseCase struct {
 	// #TODO: Adicionar dependências.
+	accountRepository repository.AccountsRepository
 }
 
 // NewAccountUseCase cria uma nova instância de accountUseCase.
-func NewAccountUseCase() AccountUseCase {
-	return &accountUseCase{}
+func NewAccountUseCase(accountRepository repository.AccountsRepository) AccountUseCase {
+	return &accountUseCase{
+		accountRepository: accountRepository,
+	}
 }
 
 // CreateAccount cria uma nova conta com o documento fornecido.
@@ -30,12 +34,27 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 		Document:  document,
 		CreatedAt: time.Now(),
 	}
-	// #TODO: Implementar lógica para persistir a conta no repositório.
+
+	// implementa a criação da conta no repositório
+	err := uc.accountRepository.Create(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+
 	return account, nil
 }
 
 // GetAccountByID retorna uma conta pelo seu ID.
 func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity.Account, error) {
-	// #TODO: Implementar lógica para buscar a conta pelo ID no repositório.
-	return nil, nil
+	// implementa a busca da conta pelo ID no repositório
+	account, err := uc.accountRepository.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if account == nil {
+		return nil, nil // Conta não encontrada
+	}
+
+	return account, nil
 }

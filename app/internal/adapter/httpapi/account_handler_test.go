@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi/dtos"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/usecase"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,8 +19,9 @@ import (
 func TestCreateAccountHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
+	fakeRepository := repository.NewFakeAccountRepository()
 
-	accountUseCase := usecase.NewAccountUseCase()
+	accountUseCase := usecase.NewAccountUseCase(fakeRepository)
 	accountHandler := NewAccountHandler(accountUseCase)
 
 	router.POST("/accounts", accountHandler.CreateAccount)

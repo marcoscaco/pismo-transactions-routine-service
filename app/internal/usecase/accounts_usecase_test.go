@@ -6,12 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/stretchr/testify/assert"
 )
 
 // Teste unitário para a função CreateAccount.
 func TestCreateAccount(t *testing.T) {
-	useCase := NewAccountUseCase()
+	fakeRepository := repository.NewFakeAccountRepository()
+
+	useCase := NewAccountUseCase(fakeRepository)
 
 	account, err := useCase.CreateAccount(context.Background(), "12345678900")
 	assert.NoError(t, err)
@@ -21,7 +24,9 @@ func TestCreateAccount(t *testing.T) {
 
 // Teste unitário para a função GetAccountByID.
 func TestGetAccountByID(t *testing.T) {
-	useCase := NewAccountUseCase()
+
+	fakeRepository := repository.NewFakeAccountRepository()
+	useCase := NewAccountUseCase(fakeRepository)
 
 	// Criar uma conta para testar a recuperação
 	account, _ := useCase.CreateAccount(context.Background(), "12345678900")
