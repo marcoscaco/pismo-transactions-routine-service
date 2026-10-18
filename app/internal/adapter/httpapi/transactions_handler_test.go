@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi/dtos"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/usecase"
 	"github.com/shopspring/decimal"
@@ -21,7 +22,10 @@ func TestCreateTransactionHandler(t *testing.T) {
 	router := gin.Default()
 
 	transactionRepository := repository.NewFakeTransactionRepository()
-	transactionUseCase := usecase.NewTransactionUseCase(transactionRepository)
+	operationTypeRepository := repository.NewFakeOperationTypeRepository(
+		&entity.OperationType{ID: 4, AmountMultiplier: 1},
+	)
+	transactionUseCase := usecase.NewTransactionUseCase(transactionRepository, operationTypeRepository)
 	transactionHandler := NewTransactionHandler(transactionUseCase)
 
 	router.POST("/transactions", transactionHandler.CreateTransaction)

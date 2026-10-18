@@ -53,7 +53,8 @@ func main() {
 	accountHandler := httpapi.NewAccountHandler(accountUseCase)
 
 	transactionRepository := postgres.NewTransactionRepository(sqlDB)
-	transactionUseCase := usecase.NewTransactionUseCase(transactionRepository)
+	operationTypeRepository := postgres.NewOperationTypeRepository(sqlDB)
+	transactionUseCase := usecase.NewTransactionUseCase(transactionRepository, operationTypeRepository)
 	transactionHandler := httpapi.NewTransactionHandler(transactionUseCase)
 
 	// setup basico do router HTTP

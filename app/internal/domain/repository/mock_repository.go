@@ -101,3 +101,29 @@ func (r *FakeTransactionRepository) GetTransactionsByAccountID(ctx context.Conte
 
 	return transactions, nil
 }
+
+type FakeOperationTypeRepository struct {
+	mu             sync.RWMutex
+	operationTypes map[int64]*entity.OperationType
+}
+
+func NewFakeOperationTypeRepository(operationTypes ...*entity.OperationType) *FakeOperationTypeRepository {
+	repository := &FakeOperationTypeRepository{
+		operationTypes: make(map[int64]*entity.OperationType, len(operationTypes)),
+	}
+	for _, operationType := range operationTypes {
+		repository.operationTypes[operationType.ID] = operationType
+	}
+	return repository
+}
+
+func (r *FakeOperationTypeRepository) GetByID(ctx context.Context, id int64) (*entity.OperationType, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	operationType, exists := r.operationTypes[id]
+	if !exists {
+		return nil, domain.ErrInvalidOperationTypeID
+	}
+	return operationType, nil
+}

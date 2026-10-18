@@ -19,14 +19,18 @@ type TransactionUseCase interface {
 
 // transactionUseCase é a implementação da interface TransactionUseCase.
 type transactionUseCase struct {
-	// #TODO: Adicionar dependências.
-	transactionRepository repository.TransactionsRepository
+	transactionRepository   repository.TransactionsRepository
+	operationTypeRepository OperationTypeRepository
 }
 
 // NewTransactionUseCase cria uma nova instância de transactionUseCase.
-func NewTransactionUseCase(transactionRepository repository.TransactionsRepository) TransactionUseCase {
+func NewTransactionUseCase(
+	transactionRepository repository.TransactionsRepository,
+	operationTypeRepository OperationTypeRepository,
+) TransactionUseCase {
 	return &transactionUseCase{
-		transactionRepository: transactionRepository,
+		transactionRepository:   transactionRepository,
+		operationTypeRepository: operationTypeRepository,
 	}
 }
 
@@ -43,13 +47,22 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 		return nil, domain.ErrInvalidTransactionAmount
 	}
 
-	// valida operationTypeId
 	if operationTypeId <= 0 {
 		return nil, domain.ErrInvalidOperationTypeID
 	}
 
-	// transacoes do tipo purchase, purchacestalments, widrawal devem ser negativas, mas o valor passado deve ser positivo, e o sistema deve tratar a inversão do sinal.
-	amount = calculateAmount(operationTypeId, amount)
+	operationType, err := uc.operationTypeRepository.GetByID(ctx, operationTypeId)
+	if err != nil {
+		return nil, err
+	}
+	if operationType == nil {
+		return nil, domain.ErrInvalidOperationTypeID
+	}
+	if operationType.AmountMultiplier != -1 && operationType.AmountMultiplier != 1 {
+		return nil, domain.ErrInvalidOperationMultiplier
+	}
+
+	amount = amount.Mul(decimal.NewFromInt(int64(operationType.AmountMultiplier)))
 
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
@@ -58,19 +71,13 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 		OperationType: operationTypeId,
 	}
 
-	err := uc.transactionRepository.CreateTransaction(ctx, transaction)
+	err = uc.transactionRepository.CreateTransaction(ctx, transaction)
 	if err != nil {
 		return nil, err
 	}
 	return transaction, nil
 }
 
-func calculateAmount(operationTypeId int64, amount decimal.Decimal) decimal.Decimal {
-	if operationTypeId == 1 || operationTypeId == 2 || operationTypeId == 3 {
-		amount = amount.Neg()
-	}
-	return amount
-}
 func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
 	if transactionID <= 0 {
 		return nil, domain.ErrInvalidTransactionID
