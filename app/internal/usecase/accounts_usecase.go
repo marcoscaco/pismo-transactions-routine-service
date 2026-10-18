@@ -3,8 +3,9 @@ package usecase
 
 import (
 	"context"
-	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"time"
+
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
 // AccountUseCase é a interface que define os métodos para manipulação de contas.

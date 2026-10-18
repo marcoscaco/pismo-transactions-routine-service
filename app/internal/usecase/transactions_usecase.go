@@ -3,14 +3,15 @@ package usecase
 
 import (
 	"context"
+	"time"
+
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"github.com/shopspring/decimal"
-	"time"
 )
 
 // TransactionUseCase é a interface que define os métodos para manipulação de transações.
 type TransactionUseCase interface {
-	CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int) (*entity.Transaction, error)
+	CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int64) (*entity.Transaction, error)
 	GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error)
 }
 
@@ -25,7 +26,7 @@ func NewTransactionUseCase() TransactionUseCase {
 }
 
 // CreateTransaction cria uma nova transação com os parâmetros fornecidos.
-func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int) (*entity.Transaction, error) {
+func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int64) (*entity.Transaction, error) {
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
 		Amount:        amount,
