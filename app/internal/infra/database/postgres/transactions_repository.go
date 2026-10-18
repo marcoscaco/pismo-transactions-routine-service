@@ -29,7 +29,7 @@ func (r *TransactionRepository) CreateTransaction(ctx context.Context, transacti
 	query := "INSERT INTO transactions_operations (account_id, operation_type_id, amount, event_date) VALUES ($1, $2, $3, $4) RETURNING id"
 	err := r.db.QueryRowContext(ctx, query, transaction.AccountID, transaction.OperationType, transaction.Amount, time.Now()).Scan(&transaction.ID)
 	if err != nil {
-		return err
+		return mapPostgresError(err)
 	}
 	transaction.EventDate = time.Now()
 	return nil
