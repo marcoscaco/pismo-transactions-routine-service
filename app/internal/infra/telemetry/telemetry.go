@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -12,8 +13,10 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/platform/env"
@@ -27,13 +30,12 @@ const (
 	shutdownTimeout       = 3 * time.Second
 )
 
-// InitTelemetry configures the global MeterProvider from the OTEL_* environment
-// variables and returns a function that flushes and shuts the provider down.
+// InitTelemetry configures the global MeterProvider and TracerProvider from the
+// OTEL_* environment variables and returns a function that flushes and shuts
+// both providers down.
 func InitTelemetry(ctx context.Context, serviceName string) (func(), error) {
-	rawEndpoint := env.OrDefault("OTEL_EXPORTER_OTLP_ENDPOINT", defaultEndpoint)
-
 	endpoint, insecure, err := exporterEndpoint(
-		rawEndpoint,
+		env.OrDefault("OTEL_EXPORTER_OTLP_ENDPOINT", defaultEndpoint),
 		os.Getenv("OTEL_EXPORTER_OTLP_INSECURE"),
 	)
 	if err != nil {
@@ -42,54 +44,101 @@ func InitTelemetry(ctx context.Context, serviceName string) (func(), error) {
 
 	log.Printf("[OTel Init] Conectando no Collector gRPC em %s (insecure=%t)...", endpoint, insecure)
 
-	exporterOpts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithEndpoint(endpoint)}
-	if insecure {
-		exporterOpts = append(exporterOpts, otlpmetricgrpc.WithInsecure())
+	ctxInit, cancelInit := context.WithTimeout(ctx, initTimeout)
+	defer cancelInit()
+
+	res, err := newResource(ctxInit, serviceName)
+	if err != nil {
+		log.Printf("[OTel Error] Falha ao criar resource: %v", err)
+		return func() {}, err
 	}
 
-	ctxTimeout, cancel := context.WithTimeout(ctx, initTimeout)
-	defer cancel()
-
-	metricExporter, err := otlpmetricgrpc.New(ctxTimeout, exporterOpts...)
+	meterProvider, err := newMeterProvider(ctxInit, res, endpoint, insecure)
 	if err != nil {
 		return func() {}, err
 	}
 
+	tracerProvider, err := newTracerProvider(ctxInit, res, endpoint, insecure)
+	if err != nil {
+		_ = meterProvider.Shutdown(ctxInit)
+		return func() {}, err
+	}
+
+	otel.SetMeterProvider(meterProvider)
+	otel.SetTracerProvider(tracerProvider)
+	log.Println("[OTel Success] MeterProvider e TracerProvider registrados com sucesso!")
+
+	shutdown := func() {
+		ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancelShutdown()
+
+		err := errors.Join(
+			meterProvider.Shutdown(ctxShutdown),
+			tracerProvider.Shutdown(ctxShutdown),
+		)
+		if err != nil {
+			log.Printf("[OTel Shutdown Error] %v", err)
+		}
+	}
+
+	return shutdown, nil
+}
+
+func newResource(ctx context.Context, serviceName string) (*resource.Resource, error) {
 	// Evita conflito declarando explicitamente a SchemaURL correspondente à constante do semconv
-	res, err := resource.New(ctx,
+	return resource.New(ctx,
 		resource.WithSchemaURL(semconv.SchemaURL),
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String(serviceName),
 			attribute.String("environment", environment()),
 		),
 	)
-	if err != nil {
-		log.Printf("[OTel Error] Falha ao criar resource: %v", err)
-		return func() {}, err
+}
+
+func newMeterProvider(
+	ctx context.Context,
+	res *resource.Resource,
+	endpoint string,
+	insecure bool,
+) (*metric.MeterProvider, error) {
+	opts := []otlpmetricgrpc.Option{otlpmetricgrpc.WithEndpoint(endpoint)}
+	if insecure {
+		opts = append(opts, otlpmetricgrpc.WithInsecure())
 	}
 
-	reader := metric.NewPeriodicReader(
-		metricExporter,
-		metric.WithInterval(exportInterval()),
-	)
+	exporter, err := otlpmetricgrpc.New(ctx, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("criando exportador de métricas: %w", err)
+	}
 
-	meterProvider := metric.NewMeterProvider(
+	reader := metric.NewPeriodicReader(exporter, metric.WithInterval(exportInterval()))
+
+	return metric.NewMeterProvider(
 		metric.WithResource(res),
 		metric.WithReader(reader),
-	)
+	), nil
+}
 
-	otel.SetMeterProvider(meterProvider)
-	log.Println("[OTel Success] MeterProvider registrado com sucesso!")
-
-	shutdown := func() {
-		ctxShutdown, cancelShutdown := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancelShutdown()
-		if err := meterProvider.Shutdown(ctxShutdown); err != nil {
-			log.Printf("[OTel Shutdown Error] %v", err)
-		}
+func newTracerProvider(
+	ctx context.Context,
+	res *resource.Resource,
+	endpoint string,
+	insecure bool,
+) (*sdktrace.TracerProvider, error) {
+	opts := []otlptracegrpc.Option{otlptracegrpc.WithEndpoint(endpoint)}
+	if insecure {
+		opts = append(opts, otlptracegrpc.WithInsecure())
 	}
 
-	return shutdown, nil
+	exporter, err := otlptracegrpc.New(ctx, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("criando exportador de traces: %w", err)
+	}
+
+	return sdktrace.NewTracerProvider(
+		sdktrace.WithResource(res),
+		sdktrace.WithBatcher(exporter),
+	), nil
 }
 
 // exporterEndpoint normalizes the endpoint and resolves whether the connection
