@@ -7,7 +7,7 @@ import (
 
 // Account representa uma conta no sistema.
 type Account struct {
-	ID        int
+	ID        int64
 	Document  string
 	CreatedAt time.Time
 }

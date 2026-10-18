@@ -1,0 +1,26 @@
+// teste unitario para o DTO de transacao
+package dtos
+
+import (
+	"testing"
+
+	"github.com/shopspring/decimal"
+	"github.com/stretchr/testify/assert"
+)
+
+// Teste unitário para a função NewTransactionDTO.
+func TestNewTransactionDTO(t *testing.T) {
+	transaction := TransactionDTO{
+		ID:            1,
+		AccountID:     1,
+		OperationType: 1,
+		Amount:        decimal.NewFromFloat(100.0),
+		EventDate:     "2023-01-01T00:00:00Z",
+	}
+
+	assert.Equal(t, int64(1), transaction.ID)
+	assert.Equal(t, int64(1), transaction.AccountID)
+	assert.Equal(t, int64(1), transaction.OperationType)
+	assert.Equal(t, decimal.NewFromFloat(100.0), transaction.Amount)
+	assert.Equal(t, "2023-01-01T00:00:00Z", transaction.EventDate)
+}
