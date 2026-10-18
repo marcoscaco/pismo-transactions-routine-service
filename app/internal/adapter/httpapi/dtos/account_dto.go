@@ -3,7 +3,7 @@ package dtos
 
 // AccountDTO representa os dados de uma conta.
 type AccountDTO struct {
-	ID       int `json:"id"`
-	Document string `json:"document_number"`
+	ID        int64  `json:"id"`
+	Document  string `json:"document_number"`
 	CreatedAt string `json:"created_at"`
 }

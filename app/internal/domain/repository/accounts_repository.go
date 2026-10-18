@@ -2,13 +2,14 @@
 package repository
 
 import (
-	"app/internal/domain/entity"
+	"context"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
 // AccountsRepository define a interface para gerenciar contas no sistema.
 type AccountsRepository interface {
 	// Create cria uma nova conta no sistema.
-	Create(account *entity.Account) error
+	Create(ctx context.Context, account *entity.Account) error
 	// GetByID retorna uma conta pelo seu ID.
-	GetByID(id int) (*entity.Account, error)
+	GetByID(ctx context.Context, id int) (*entity.Account, error)
 }
