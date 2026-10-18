@@ -9,7 +9,9 @@ const serviceName = "pismo-transactions-routine-service"
 
 // Handlers groups the HTTP handlers wired into the router.
 type Handlers struct {
-	Health *HealthHandler
+	Health      *HealthHandler
+	Account     *AccountHandler
+	Transaction *TransactionHandler
 }
 
 // NewRouter registers the application routes. A nil metrics value disables
@@ -26,6 +28,17 @@ func NewRouter(handlers Handlers, metrics *Metrics) *gin.Engine {
 
 	// registrar as rotas
 	router.GET("/health", handlers.Health.Handle)
+
+	// Rotas da Pismo para Contas
+	accountsGroup := router.Group("/accounts")
+	{
+		accountsGroup.POST("", handlers.Account.CreateAccount)
+	}
+
+	transactionsGroup := router.Group("/transactions")
+	{
+		transactionsGroup.POST("", handlers.Transaction.CreateTransaction)
+	}
 
 	return router
 }
