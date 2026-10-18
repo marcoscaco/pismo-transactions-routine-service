@@ -1,15 +1,48 @@
 package main
 
-import "github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi"
+import (
+	"context"
+	"log"
 
-const serverAddress = ":8080"
+	"go.opentelemetry.io/otel"
+
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/infra/telemetry"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/platform/env"
+)
+
+const (
+	defaultPort = "8080"
+	serviceName = "pismo-transactions-routine-service"
+)
 
 func main() {
-	router := httpapi.NewRouter(httpapi.Handlers{
-		Health: httpapi.NewHealthHandler(),
-	})
+	ctx := context.Background()
 
-	if err := router.Run(serverAddress); err != nil {
-		panic(err)
+	shutdown, err := telemetry.InitTelemetry(ctx, serviceName)
+	if err != nil {
+		log.Printf("Aviso: falha ao iniciar telemetria: %v", err)
+	} else {
+		defer shutdown()
 	}
+
+	metrics, err := httpapi.NewMetrics(otel.Meter(serviceName))
+	if err != nil {
+		log.Fatalf("falha ao criar instrumentos de métrica: %v", err)
+	}
+
+	// setup basico do router HTTP
+	router := httpapi.NewRouter(
+		httpapi.Handlers{Health: httpapi.NewHealthHandler()},
+		metrics,
+	)
+
+	if err := router.Run(serverAddress()); err != nil {
+		log.Fatalf("falha ao iniciar servidor HTTP: %v", err)
+	}
+}
+
+// serverAddress resolves the listen address from PORT, defaulting to 8080.
+func serverAddress() string {
+	return ":" + env.OrDefault("PORT", defaultPort)
 }
