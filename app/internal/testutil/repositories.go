@@ -1,4 +1,4 @@
-package repository
+package testutil
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 )
 
-// FakeAccountRepository é uma implementação em memória de repository.AccountRepository para testes.
 type FakeAccountRepository struct {
 	mu       sync.RWMutex
 	accounts map[int64]*entity.Account
@@ -27,14 +26,12 @@ func (r *FakeAccountRepository) Create(ctx context.Context, account *entity.Acco
 	defer r.mu.Unlock()
 
 	account.ID = r.nextID
-	created := &entity.Account{
+	r.accounts[account.ID] = &entity.Account{
 		ID:        account.ID,
 		Document:  account.Document,
 		CreatedAt: account.CreatedAt,
 	}
-	r.accounts[account.ID] = created
 	r.nextID++
-
 	return nil
 }
 
@@ -46,23 +43,20 @@ func (r *FakeAccountRepository) GetByID(ctx context.Context, id int64) (*entity.
 	if !exists {
 		return nil, domain.ErrAccountNotFound
 	}
-
 	return account, nil
 }
 
-// FakeTransactionRepository é uma implementação em memória de repository.TransactionsRepository para testes.
+type FakeTransactionRepository struct {
+	mu           sync.RWMutex
+	transactions map[int64]*entity.Transaction
+	nextID       int64
+}
+
 func NewFakeTransactionRepository() *FakeTransactionRepository {
 	return &FakeTransactionRepository{
 		transactions: make(map[int64]*entity.Transaction),
 		nextID:       1,
 	}
-}
-
-// FakeTransactionRepository é uma implementação em memória de repository.TransactionsRepository para testes.
-type FakeTransactionRepository struct {
-	mu           sync.RWMutex
-	transactions map[int64]*entity.Transaction
-	nextID       int64
 }
 
 func (r *FakeTransactionRepository) CreateTransaction(ctx context.Context, transaction *entity.Transaction) error {
@@ -72,7 +66,6 @@ func (r *FakeTransactionRepository) CreateTransaction(ctx context.Context, trans
 	transaction.ID = r.nextID
 	r.transactions[r.nextID] = transaction
 	r.nextID++
-
 	return nil
 }
 
@@ -84,7 +77,6 @@ func (r *FakeTransactionRepository) GetTransactionByID(ctx context.Context, tran
 	if !exists {
 		return nil, domain.ErrTransactionNotFound
 	}
-
 	return transaction, nil
 }
 
@@ -92,13 +84,12 @@ func (r *FakeTransactionRepository) GetTransactionsByAccountID(ctx context.Conte
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	var transactions []*entity.Transaction
+	transactions := make([]*entity.Transaction, 0)
 	for _, transaction := range r.transactions {
 		if transaction.AccountID == accountID {
 			transactions = append(transactions, transaction)
 		}
 	}
-
 	return transactions, nil
 }
 

@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
-	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 // Teste unitário para a função CreateAccount.
 func TestCreateAccount(t *testing.T) {
-	fakeRepository := repository.NewFakeAccountRepository()
+	fakeRepository := testutil.NewFakeAccountRepository()
 
 	useCase := NewAccountUseCase(fakeRepository)
 
@@ -25,7 +25,7 @@ func TestCreateAccount(t *testing.T) {
 
 // Teste unitário para a função GetAccountByID.
 func TestGetAccountByID(t *testing.T) {
-	fakeRepository := repository.NewFakeAccountRepository()
+	fakeRepository := testutil.NewFakeAccountRepository()
 	useCase := NewAccountUseCase(fakeRepository)
 
 	account, err := useCase.CreateAccount(context.Background(), "12345678900")
@@ -37,7 +37,7 @@ func TestGetAccountByID(t *testing.T) {
 }
 
 func TestAccountUseCaseSentinelErrors(t *testing.T) {
-	useCase := NewAccountUseCase(repository.NewFakeAccountRepository())
+	useCase := NewAccountUseCase(testutil.NewFakeAccountRepository())
 
 	_, err := useCase.CreateAccount(context.Background(), "")
 	assert.ErrorIs(t, err, domain.ErrInvalidDocument)

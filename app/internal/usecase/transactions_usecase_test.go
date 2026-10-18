@@ -8,15 +8,15 @@ import (
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
-	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/testutil"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
 // Teste unitário para a função CreateTransaction.
 func TestCreateTransaction(t *testing.T) {
-	fakeRepository := repository.NewFakeTransactionRepository()
-	operationTypeRepository := repository.NewFakeOperationTypeRepository(
+	fakeRepository := testutil.NewFakeTransactionRepository()
+	operationTypeRepository := testutil.NewFakeOperationTypeRepository(
 		&entity.OperationType{ID: 40, AmountMultiplier: 1},
 		&entity.OperationType{ID: 10, AmountMultiplier: -1},
 	)
@@ -48,8 +48,8 @@ func TestCreateTransaction(t *testing.T) {
 }
 
 func TestGetTransactionByID(t *testing.T) {
-	fakeRepository := repository.NewFakeTransactionRepository()
-	operationTypeRepository := repository.NewFakeOperationTypeRepository(
+	fakeRepository := testutil.NewFakeTransactionRepository()
+	operationTypeRepository := testutil.NewFakeOperationTypeRepository(
 		&entity.OperationType{ID: 10, AmountMultiplier: -1},
 	)
 	useCase := NewTransactionUseCase(fakeRepository, operationTypeRepository)
@@ -64,8 +64,8 @@ func TestGetTransactionByID(t *testing.T) {
 
 func TestCreateTransactionSentinelErrors(t *testing.T) {
 	useCase := NewTransactionUseCase(
-		repository.NewFakeTransactionRepository(),
-		repository.NewFakeOperationTypeRepository(&entity.OperationType{ID: 10, AmountMultiplier: -1}),
+		testutil.NewFakeTransactionRepository(),
+		testutil.NewFakeOperationTypeRepository(&entity.OperationType{ID: 10, AmountMultiplier: -1}),
 	)
 	amount := decimal.NewFromInt(10)
 
@@ -81,8 +81,8 @@ func TestCreateTransactionSentinelErrors(t *testing.T) {
 
 func TestGetTransactionByIDNotFound(t *testing.T) {
 	useCase := NewTransactionUseCase(
-		repository.NewFakeTransactionRepository(),
-		repository.NewFakeOperationTypeRepository(),
+		testutil.NewFakeTransactionRepository(),
+		testutil.NewFakeOperationTypeRepository(),
 	)
 
 	_, err := useCase.GetTransactionByID(context.Background(), 1)
