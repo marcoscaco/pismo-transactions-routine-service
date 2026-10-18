@@ -33,6 +33,7 @@ func NewRouter(handlers Handlers, metrics *Metrics) *gin.Engine {
 	accountsGroup := router.Group("/accounts")
 	{
 		accountsGroup.POST("", handlers.Account.CreateAccount)
+		accountsGroup.GET("/:id", handlers.Account.GetAccountByID)
 	}
 
 	transactionsGroup := router.Group("/transactions")

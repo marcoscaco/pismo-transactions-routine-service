@@ -3,6 +3,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -42,4 +43,32 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		CreatedAt: account.CreatedAt,
 	}
 	c.JSON(http.StatusCreated, resp)
+}
+
+// GetAccountByIDHandler lida com a recuperação de uma conta pelo ID.
+func (h *AccountHandler) GetAccountByID(c *gin.Context) {
+	idParam := c.Param("id")
+	var accountID int64
+	_, err := fmt.Sscan(idParam, &accountID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account ID"})
+		return
+	}
+
+	account, err := h.accountUseCase.GetAccountByID(c.Request.Context(), accountID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if account == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	resp := dtos.AccountDTO{
+		ID:        account.ID,
+		Document:  account.Document,
+		CreatedAt: account.CreatedAt,
+	}
+	c.JSON(http.StatusOK, resp)
 }

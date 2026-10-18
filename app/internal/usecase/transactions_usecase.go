@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/shopspring/decimal"
 )
 
@@ -18,11 +19,14 @@ type TransactionUseCase interface {
 // transactionUseCase é a implementação da interface TransactionUseCase.
 type transactionUseCase struct {
 	// #TODO: Adicionar dependências.
+	transactionRepository repository.TransactionsRepository
 }
 
 // NewTransactionUseCase cria uma nova instância de transactionUseCase.
-func NewTransactionUseCase() TransactionUseCase {
-	return &transactionUseCase{}
+func NewTransactionUseCase(transactionRepository repository.TransactionsRepository) TransactionUseCase {
+	return &transactionUseCase{
+		transactionRepository: transactionRepository,
+	}
 }
 
 // CreateTransaction cria uma nova transação com os parâmetros fornecidos.
@@ -34,9 +38,13 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 		OperationType: operationTypeId,
 	}
 	// #TODO: Implementar lógica para persistir a transação no repositório.
+	err := uc.transactionRepository.CreateTransaction(ctx, transaction)
+	if err != nil {
+		return nil, err
+	}
 	return transaction, nil
 }
 func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
 	// #TODO: Implementar lógica para buscar a transação pelo ID no repositório.
-	return nil, nil
+	return uc.transactionRepository.GetTransactionByID(ctx, transactionID)
 }

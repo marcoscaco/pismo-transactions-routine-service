@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
 // Teste unitário para a função CreateTransaction.
 func TestCreateTransaction(t *testing.T) {
-	useCase := &transactionUseCase{}
-
+	fakeRepository := repository.NewFakeTransactionRepository()
+	useCase := NewTransactionUseCase(fakeRepository) // Passando o repositório falso para o use case
 	accountID := int64(1)
 	amount := decimal.NewFromFloat(100.0)
 	operationTypeId := int64(1)
@@ -28,7 +29,8 @@ func TestCreateTransaction(t *testing.T) {
 }
 
 func TestGetTransactionByID(t *testing.T) {
-	useCase := &transactionUseCase{}
+	fakeRepository := repository.NewFakeTransactionRepository()
+	useCase := NewTransactionUseCase(fakeRepository) // Passando o repositório falso para o use case
 
 	// Criar uma transação para testar a recuperação
 	accountID := int64(1)

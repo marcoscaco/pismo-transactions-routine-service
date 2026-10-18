@@ -52,7 +52,8 @@ func main() {
 	accountUseCase := usecase.NewAccountUseCase(accountRepository)
 	accountHandler := httpapi.NewAccountHandler(accountUseCase)
 
-	transactionUseCase := usecase.NewTransactionUseCase()
+	transactionRepository := postgres.NewTransactionRepository(sqlDB)
+	transactionUseCase := usecase.NewTransactionUseCase(transactionRepository)
 	transactionHandler := httpapi.NewTransactionHandler(transactionUseCase)
 
 	// setup basico do router HTTP

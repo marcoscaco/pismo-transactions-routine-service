@@ -17,7 +17,6 @@ type AccountUseCase interface {
 
 // accountUseCase é a implementação da interface AccountUseCase.
 type accountUseCase struct {
-	// #TODO: Adicionar dependências.
 	accountRepository repository.AccountsRepository
 }
 
