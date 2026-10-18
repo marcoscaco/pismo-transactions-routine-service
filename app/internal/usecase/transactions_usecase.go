@@ -48,18 +48,28 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 		return nil, domain.ErrInvalidOperationTypeID
 	}
 
+	// transacoes do tipo purchase, purchacestalments, widrawal devem ser negativas, mas o valor passado deve ser positivo, e o sistema deve tratar a inversão do sinal.
+	amount = calculateAmount(operationTypeId, amount)
+
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
 		Amount:        amount,
 		EventDate:     time.Now(),
 		OperationType: operationTypeId,
 	}
-	// #TODO: Implementar lógica para persistir a transação no repositório.
+
 	err := uc.transactionRepository.CreateTransaction(ctx, transaction)
 	if err != nil {
 		return nil, err
 	}
 	return transaction, nil
+}
+
+func calculateAmount(operationTypeId int64, amount decimal.Decimal) decimal.Decimal {
+	if operationTypeId == 1 || operationTypeId == 2 || operationTypeId == 3 {
+		amount = amount.Neg()
+	}
+	return amount
 }
 func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
 	if transactionID <= 0 {

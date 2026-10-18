@@ -28,7 +28,7 @@ func TestCreateTransactionHandler(t *testing.T) {
 
 	requestBody := dtos.TransactionDTO{
 		AccountID:     1,
-		OperationType: 1,
+		OperationType: 4,
 		Amount:        decimal.NewFromFloat(100.0),
 	}
 	body, _ := json.Marshal(requestBody)
@@ -50,6 +50,6 @@ func TestCreateTransactionHandler(t *testing.T) {
 	err = json.Unmarshal(w.Body.Bytes(), &transactionResponse)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), transactionResponse.AccountID)
-	assert.Equal(t, int64(1), transactionResponse.OperationType)
+	assert.Equal(t, int64(4), transactionResponse.OperationType)
 	assert.True(t, transactionResponse.Amount.Equal(decimal.NewFromFloat(100.0)), "expected amount 100.0, got %s", transactionResponse.Amount)
 }

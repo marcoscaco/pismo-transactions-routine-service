@@ -18,7 +18,9 @@ func TestCreateTransaction(t *testing.T) {
 	useCase := NewTransactionUseCase(fakeRepository) // Passando o repositório falso para o use case
 	accountID := int64(1)
 	amount := decimal.NewFromFloat(100.0)
-	operationTypeId := int64(1)
+
+	//operaçao 4 aumenta o saldo entao trabalha positivo
+	operationTypeId := int64(4)
 
 	transaction, err := useCase.CreateTransaction(context.Background(), accountID, amount, operationTypeId)
 
@@ -27,6 +29,17 @@ func TestCreateTransaction(t *testing.T) {
 	assert.Equal(t, amount, transaction.Amount)
 	assert.Equal(t, operationTypeId, transaction.OperationType)
 	assert.WithinDuration(t, time.Now(), transaction.EventDate, time.Second)
+
+	// operacoes 1 2 3 devem diminuir o saldo, entao devem reportar o valor negativo
+	operationTypeId = int64(1)
+	transaction, err = useCase.CreateTransaction(context.Background(), accountID, amount, operationTypeId)
+
+	assert.NoError(t, err)
+	assert.Equal(t, accountID, transaction.AccountID)
+	assert.Equal(t, amount.Neg(), transaction.Amount) // Verifica se o valor é negativo
+	assert.Equal(t, operationTypeId, transaction.OperationType)
+	assert.WithinDuration(t, time.Now(), transaction.EventDate, time.Second)
+
 }
 
 func TestGetTransactionByID(t *testing.T) {
