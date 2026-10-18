@@ -112,3 +112,51 @@ services:
     depends_on:
       - prometheus
       - jaeger
+  postgres:
+    image: postgres:16-alpine
+    container_name: pismo_postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pismo -d pismo_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+    environment:
+      - POSTGRES_USER=pismo
+      - POSTGRES_PASSWORD=pismo_pass
+      - POSTGRES_DB=pismo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: pismo_cloudbeaver
+    restart: always
+    ports:
+      - "8081:8978"
+    volumes:
+      - ./infra/cloudbeaver_config/initial-data-sources.conf:/opt/cloudbeaver/conf/initial-data-sources.conf:U,z
+    depends_on:
+      - postgres
+    security_opt:
+      - label=disable
+  migrations:
+    image: migrate/migrate:v4.17.0
+    container_name: app_migrations
+    volumes:
+      - ./app/internal/infra/database/migrations:/migrations:z
+    command:
+      - -path=/migrations
+      - -database=postgres://pismo:pismo_pass@postgres:5432/pismo_db?sslmode=disable
+      - up
+    depends_on:
+      postgres:
+        condition: service_healthy # <--- Espera o healthcheck do Postgres dar SUCESSO
+    restart: "no"
+    security_opt:
+      - label=disable
+
+volumes:
+  postgres_data:
