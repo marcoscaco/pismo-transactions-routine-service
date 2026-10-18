@@ -9,6 +9,7 @@ import (
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/infra/telemetry"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/platform/env"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/usecase"
 )
 
 const (
@@ -31,9 +32,16 @@ func main() {
 		log.Fatalf("falha ao criar instrumentos de métrica: %v", err)
 	}
 
+	// setup/wiring dos UseCases e Handlers
+	accountUseCase := usecase.NewAccountUseCase()
+	accountHandler := httpapi.NewAccountHandler(accountUseCase)
+
 	// setup basico do router HTTP
 	router := httpapi.NewRouter(
-		httpapi.Handlers{Health: httpapi.NewHealthHandler()},
+		httpapi.Handlers{
+			Health:  httpapi.NewHealthHandler(),
+			Account: accountHandler,
+		},
 		metrics,
 	)
 

@@ -3,6 +3,7 @@ package dtos
 
 import (
 	"testing"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -15,12 +16,12 @@ func TestNewTransactionDTO(t *testing.T) {
 		AccountID:     1,
 		OperationType: 1,
 		Amount:        decimal.NewFromFloat(100.0),
-		EventDate:     "2023-01-01T00:00:00Z",
+		EventDate:     time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
 	assert.Equal(t, int64(1), transaction.ID)
 	assert.Equal(t, int64(1), transaction.AccountID)
 	assert.Equal(t, int64(1), transaction.OperationType)
 	assert.Equal(t, decimal.NewFromFloat(100.0), transaction.Amount)
-	assert.Equal(t, "2023-01-01T00:00:00Z", transaction.EventDate)
+	assert.Equal(t, time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC), transaction.EventDate)
 }
