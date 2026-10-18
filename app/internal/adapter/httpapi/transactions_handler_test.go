@@ -41,10 +41,15 @@ func TestCreateTransactionHandler(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 
-	var response dtos.TransactionDTO
+	var response map[string]json.RawMessage
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, int64(1), response.AccountID)
-	assert.Equal(t, int64(1), response.OperationType)
-	assert.True(t, response.Amount.Equal(decimal.NewFromFloat(100.0)), "expected amount 100.0, got %s", response.Amount)
+	assert.NotContains(t, response, "id")
+
+	var transactionResponse dtos.TransactionDTO
+	err = json.Unmarshal(w.Body.Bytes(), &transactionResponse)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), transactionResponse.AccountID)
+	assert.Equal(t, int64(1), transactionResponse.OperationType)
+	assert.True(t, transactionResponse.Amount.Equal(decimal.NewFromFloat(100.0)), "expected amount 100.0, got %s", transactionResponse.Amount)
 }
