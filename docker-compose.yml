@@ -76,3 +76,39 @@ services:
       - "4317"       # OTLP gRPC receptor interno
     depends_on:
       - otel-collector
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: pismo_grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources && \
+        cat <<'EOF' > /etc/grafana/provisioning/datasources/datasources.yaml
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: proxy
+            url: http://prometheus:9090
+            isDefault: true
+            jsonData:
+              timeInterval: 5s
+          - name: Jaeger
+            type: jaeger
+            access: proxy
+            url: http://jaeger:16686
+            uid: jaeger
+            jsonData:
+              tracesToMetrics:
+                datasourceUid: 'Prometheus'
+        EOF
+        exec /run.sh
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - jaeger
