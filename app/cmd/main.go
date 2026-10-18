@@ -36,11 +36,15 @@ func main() {
 	accountUseCase := usecase.NewAccountUseCase()
 	accountHandler := httpapi.NewAccountHandler(accountUseCase)
 
+	transactionUseCase := usecase.NewTransactionUseCase()
+	transactionHandler := httpapi.NewTransactionHandler(transactionUseCase)
+
 	// setup basico do router HTTP
 	router := httpapi.NewRouter(
 		httpapi.Handlers{
-			Health:  httpapi.NewHealthHandler(),
-			Account: accountHandler,
+			Health:      httpapi.NewHealthHandler(),
+			Account:     accountHandler,
+			Transaction: transactionHandler,
 		},
 		metrics,
 	)
