@@ -39,7 +39,6 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 	ctx, span = otel.Tracer("pismo-transactions-routine-service").Start(ctx, "usecase.CreateAccount")
 	defer span.End()
 
-
 	// validar se o documento é válido
 	if document == "" {
 		span.RecordError(domain.ErrInvalidDocument)

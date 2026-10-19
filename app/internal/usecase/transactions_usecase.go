@@ -43,7 +43,6 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 	ctx, span = otel.Tracer("pismo-transactions-routine-service").Start(ctx, "usecase.CreateTransaction")
 	defer span.End()
 
-
 	// valida accountID
 	if accountID <= 0 {
 		span.RecordError(domain.ErrInvalidAccountID)

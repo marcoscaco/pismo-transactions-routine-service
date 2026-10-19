@@ -5,11 +5,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
-	"go.opentelemetry.io/otel"
 )
 
 // TransactionRepository é a implementação concreta do repositório de transações usando PostgreSQL.
@@ -27,22 +25,16 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 // Create insere uma nova transação no banco de dados.
 
 func (r *TransactionRepository) CreateTransaction(ctx context.Context, transaction *entity.Transaction) error {
-	ctx, span := otel.Tracer("pismo-transactions-routine-service").Start(ctx, "repository.CreateTransaction")
-	defer span.End()
-	query := "INSERT INTO transactions_operations (account_id, operation_type_id, amount, event_date) VALUES ($1, $2, $3, $4) RETURNING id"
-	err := r.db.QueryRowContext(ctx, query, transaction.AccountID, transaction.OperationType, transaction.Amount, time.Now()).Scan(&transaction.ID)
+	query := "INSERT INTO transactions_operations (account_id, operation_type_id, amount) VALUES ($1, $2, $3) RETURNING id"
+	err := r.db.QueryRowContext(ctx, query, transaction.AccountID, transaction.OperationType, transaction.Amount).Scan(&transaction.ID)
 	if err != nil {
-		span.RecordError(err)
 		return mapPostgresError(err)
 	}
-	transaction.EventDate = time.Now()
 	return nil
 }
 
 // GetTransactionByID recupera uma transação pelo seu ID.
 func (r *TransactionRepository) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
-	ctx, span := otel.Tracer("pismo-transactions-routine-service").Start(ctx, "repository.GetTransactionByID")
-	defer span.End()
 	query := "SELECT id, account_id, operation_type_id, amount, event_date FROM transactions_operations WHERE id = $1"
 	row := r.db.QueryRowContext(ctx, query, transactionID)
 
@@ -52,7 +44,6 @@ func (r *TransactionRepository) GetTransactionByID(ctx context.Context, transact
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrTransactionNotFound
 		}
-		span.RecordError(err)
 		return nil, err
 	}
 	return transaction, nil
@@ -60,12 +51,9 @@ func (r *TransactionRepository) GetTransactionByID(ctx context.Context, transact
 
 // GetTransactionsByAccountID recupera todas as transações associadas a uma conta específica.
 func (r *TransactionRepository) GetTransactionsByAccountID(ctx context.Context, accountID int64) ([]*entity.Transaction, error) {
-	ctx, span := otel.Tracer("pismo-transactions-routine-service").Start(ctx, "repository.GetTransactionsByAccountID")
-	defer span.End()
 	query := "SELECT id, account_id, operation_type_id, amount, event_date FROM transactions_operations WHERE account_id = $1"
 	rows, err := r.db.QueryContext(ctx, query, accountID)
 	if err != nil {
-		span.RecordError(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -75,14 +63,12 @@ func (r *TransactionRepository) GetTransactionsByAccountID(ctx context.Context, 
 		transaction := &entity.Transaction{}
 		err := rows.Scan(&transaction.ID, &transaction.AccountID, &transaction.OperationType, &transaction.Amount, &transaction.EventDate)
 		if err != nil {
-			span.RecordError(err)
 			return nil, err
 		}
 		transactions = append(transactions, transaction)
 	}
 
 	if err = rows.Err(); err != nil {
-		span.RecordError(err)
 		return nil, err
 	}
 
