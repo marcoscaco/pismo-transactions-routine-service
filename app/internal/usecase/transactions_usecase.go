@@ -20,13 +20,13 @@ type TransactionUseCase interface {
 // transactionUseCase é a implementação da interface TransactionUseCase.
 type transactionUseCase struct {
 	transactionRepository   repository.TransactionsRepository
-	operationTypeRepository OperationTypeRepository
+	operationTypeRepository repository.OperationTypeRepository
 }
 
 // NewTransactionUseCase cria uma nova instância de transactionUseCase.
 func NewTransactionUseCase(
 	transactionRepository repository.TransactionsRepository,
-	operationTypeRepository OperationTypeRepository,
+	operationTypeRepository repository.OperationTypeRepository,
 ) TransactionUseCase {
 	return &transactionUseCase{
 		transactionRepository:   transactionRepository,
