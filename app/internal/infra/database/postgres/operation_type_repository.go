@@ -7,6 +7,7 @@ import (
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
+	"go.opentelemetry.io/otel"
 )
 
 type OperationTypeRepository struct {
@@ -18,6 +19,8 @@ func NewOperationTypeRepository(db *sql.DB) *OperationTypeRepository {
 }
 
 func (r *OperationTypeRepository) GetByID(ctx context.Context, id int64) (*entity.OperationType, error) {
+	ctx, span := otel.Tracer("pismo-transactions-routine-service").Start(ctx, "repository.GetOperationTypeByID")
+	defer span.End()
 	const query = "SELECT id, description, amount_multiplier FROM operation_types WHERE id = $1"
 
 	operationType := &entity.OperationType{}
@@ -30,6 +33,7 @@ func (r *OperationTypeRepository) GetByID(ctx context.Context, id int64) (*entit
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrInvalidOperationTypeID
 		}
+		span.RecordError(err)
 		return nil, err
 	}
 
