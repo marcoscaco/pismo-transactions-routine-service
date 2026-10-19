@@ -3,6 +3,7 @@ package testutil
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -26,6 +27,7 @@ func (r *FakeAccountRepository) Create(ctx context.Context, account *entity.Acco
 	defer r.mu.Unlock()
 
 	account.ID = r.nextID
+	account.CreatedAt = time.Now()
 	r.accounts[account.ID] = &entity.Account{
 		ID:        account.ID,
 		Document:  account.Document,

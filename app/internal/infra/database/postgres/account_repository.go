@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -25,12 +24,11 @@ func NewAccountRepository(db *sql.DB) *AccountRepository {
 
 // Create insere uma nova conta no banco de dados.
 func (r *AccountRepository) Create(ctx context.Context, account *entity.Account) error {
-	query := "INSERT INTO accounts (document_number) VALUES ($1) RETURNING id"
-	err := r.db.QueryRowContext(ctx, query, account.Document).Scan(&account.ID)
+	query := "INSERT INTO accounts (document_number) VALUES ($1) RETURNING id, created_at"
+	err := r.db.QueryRowContext(ctx, query, account.Document).Scan(&account.ID, &account.CreatedAt)
 	if err != nil {
 		return err
 	}
-	account.CreatedAt = time.Now()
 	return nil
 }
 

@@ -4,7 +4,6 @@ package usecase
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -52,8 +51,7 @@ func (uc *accountUseCase) CreateAccount(ctx context.Context, document string) (*
 	}
 
 	account := &entity.Account{
-		Document:  document,
-		CreatedAt: time.Now(),
+		Document: document,
 	}
 
 	// implementa a criação da conta no repositório

@@ -100,5 +100,12 @@ func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactio
 		span.RecordError(domain.ErrInvalidTransactionID)
 		return nil, domain.ErrInvalidTransactionID
 	}
-	return uc.transactionRepository.GetTransactionByID(ctx, transactionID)
+
+	transaction, err := uc.transactionRepository.GetTransactionByID(ctx, transactionID)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	return transaction, nil
 }

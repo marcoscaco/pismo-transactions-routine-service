@@ -67,9 +67,8 @@ func (h *AccountHandler) GetAccountByID(c *gin.Context) {
 	}
 
 	resp := dtos.AccountDTO{
-		ID:        account.ID,
-		Document:  account.Document,
-		CreatedAt: account.CreatedAt,
+		ID:       account.ID,
+		Document: account.Document,
 	}
 	c.JSON(http.StatusOK, resp)
 }
