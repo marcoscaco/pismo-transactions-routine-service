@@ -6,12 +6,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
+	"github.com/marcoscaco/pismo-transactions-routine-service/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 // Teste unitário para a função CreateAccount.
 func TestCreateAccount(t *testing.T) {
-	useCase := NewAccountUseCase()
+	fakeRepository := testutil.NewFakeAccountRepository()
+
+	useCase := NewAccountUseCase(fakeRepository)
 
 	account, err := useCase.CreateAccount(context.Background(), "12345678900")
 	assert.NoError(t, err)
@@ -21,12 +25,26 @@ func TestCreateAccount(t *testing.T) {
 
 // Teste unitário para a função GetAccountByID.
 func TestGetAccountByID(t *testing.T) {
-	useCase := NewAccountUseCase()
+	fakeRepository := testutil.NewFakeAccountRepository()
+	useCase := NewAccountUseCase(fakeRepository)
 
-	// Criar uma conta para testar a recuperação
-	account, _ := useCase.CreateAccount(context.Background(), "12345678900")
-
-	_, err := useCase.GetAccountByID(context.Background(), account.ID)
+	account, err := useCase.CreateAccount(context.Background(), "12345678900")
 	assert.NoError(t, err)
-	// #TODO: Implementar lógica real para buscar a conta pelo ID no repositório.
+
+	got, err := useCase.GetAccountByID(context.Background(), account.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, account, got)
+}
+
+func TestAccountUseCaseSentinelErrors(t *testing.T) {
+	useCase := NewAccountUseCase(testutil.NewFakeAccountRepository())
+
+	_, err := useCase.CreateAccount(context.Background(), "")
+	assert.ErrorIs(t, err, domain.ErrInvalidDocument)
+
+	_, err = useCase.GetAccountByID(context.Background(), 0)
+	assert.ErrorIs(t, err, domain.ErrInvalidAccountID)
+
+	_, err = useCase.GetAccountByID(context.Background(), 1)
+	assert.ErrorIs(t, err, domain.ErrAccountNotFound)
 }

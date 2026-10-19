@@ -32,7 +32,7 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 
 	transaction, err := h.transactionUseCase.CreateTransaction(c.Request.Context(), request.AccountID, request.Amount, request.OperationType)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeUseCaseError(c, err)
 		return
 	}
 

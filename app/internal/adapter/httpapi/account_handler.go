@@ -4,6 +4,7 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/adapter/httpapi/dtos"
@@ -32,7 +33,7 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 
 	account, err := h.accountUseCase.CreateAccount(c.Request.Context(), request.Document)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		writeUseCaseError(c, err)
 		return
 	}
 
@@ -42,4 +43,33 @@ func (h *AccountHandler) CreateAccount(c *gin.Context) {
 		CreatedAt: account.CreatedAt,
 	}
 	c.JSON(http.StatusCreated, resp)
+}
+
+// GetAccountByIDHandler lida com a recuperação de uma conta pelo ID.
+func (h *AccountHandler) GetAccountByID(c *gin.Context) {
+	idParam := c.Param("id")
+	var accountID int64
+	var err error
+	accountID, err = strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid account ID"})
+		return
+	}
+
+	account, err := h.accountUseCase.GetAccountByID(c.Request.Context(), accountID)
+	if err != nil {
+		writeUseCaseError(c, err)
+		return
+	}
+	if account == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "account not found"})
+		return
+	}
+
+	resp := dtos.AccountDTO{
+		ID:        account.ID,
+		Document:  account.Document,
+		CreatedAt: account.CreatedAt,
+	}
+	c.JSON(http.StatusOK, resp)
 }
