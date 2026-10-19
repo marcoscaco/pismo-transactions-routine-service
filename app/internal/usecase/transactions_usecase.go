@@ -3,12 +3,14 @@ package usecase
 
 import (
 	"context"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/repository"
 	"github.com/shopspring/decimal"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // TransactionUseCase é a interface que define os métodos para manipulação de transações.
@@ -36,29 +38,38 @@ func NewTransactionUseCase(
 
 // CreateTransaction cria uma nova transação com os parâmetros fornecidos.
 func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID int64, amount decimal.Decimal, operationTypeId int64) (*entity.Transaction, error) {
+	var span trace.Span
+	ctx, span = otel.Tracer("pismo-transactions-routine-service").Start(ctx, "usecase.CreateTransaction")
+	defer span.End()
 
 	// valida accountID
 	if accountID <= 0 {
+		span.RecordError(domain.ErrInvalidAccountID)
 		return nil, domain.ErrInvalidAccountID
 	}
 
 	// valida amount
 	if amount.LessThanOrEqual(decimal.Zero) {
+		span.RecordError(domain.ErrInvalidTransactionAmount)
 		return nil, domain.ErrInvalidTransactionAmount
 	}
 
 	if operationTypeId <= 0 {
+		span.RecordError(domain.ErrInvalidOperationTypeID)
 		return nil, domain.ErrInvalidOperationTypeID
 	}
 
 	operationType, err := uc.operationTypeRepository.GetByID(ctx, operationTypeId)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 	if operationType == nil {
+		span.RecordError(domain.ErrInvalidOperationTypeID)
 		return nil, domain.ErrInvalidOperationTypeID
 	}
 	if operationType.AmountMultiplier != -1 && operationType.AmountMultiplier != 1 {
+		span.RecordError(domain.ErrInvalidOperationMultiplier)
 		return nil, domain.ErrInvalidOperationMultiplier
 	}
 
@@ -67,20 +78,32 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
 		Amount:        amount,
-		EventDate:     time.Now(),
 		OperationType: operationTypeId,
 	}
 
 	err = uc.transactionRepository.CreateTransaction(ctx, transaction)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 	return transaction, nil
 }
 
 func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactionID int64) (*entity.Transaction, error) {
+	var span trace.Span
+	ctx, span = otel.Tracer("pismo-transactions-routine-service").Start(ctx, "usecase.GetTransactionByID")
+	defer span.End()
+
 	if transactionID <= 0 {
+		span.RecordError(domain.ErrInvalidTransactionID)
 		return nil, domain.ErrInvalidTransactionID
 	}
-	return uc.transactionRepository.GetTransactionByID(ctx, transactionID)
+
+	transaction, err := uc.transactionRepository.GetTransactionByID(ctx, transactionID)
+	if err != nil {
+		span.RecordError(err)
+		return nil, err
+	}
+
+	return transaction, nil
 }

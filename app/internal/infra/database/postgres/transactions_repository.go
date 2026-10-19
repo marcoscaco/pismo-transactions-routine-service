@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -26,12 +25,11 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 // Create insere uma nova transação no banco de dados.
 
 func (r *TransactionRepository) CreateTransaction(ctx context.Context, transaction *entity.Transaction) error {
-	query := "INSERT INTO transactions_operations (account_id, operation_type_id, amount, event_date) VALUES ($1, $2, $3, $4) RETURNING id"
-	err := r.db.QueryRowContext(ctx, query, transaction.AccountID, transaction.OperationType, transaction.Amount, time.Now()).Scan(&transaction.ID)
+	query := "INSERT INTO transactions_operations (account_id, operation_type_id, amount) VALUES ($1, $2, $3) RETURNING id"
+	err := r.db.QueryRowContext(ctx, query, transaction.AccountID, transaction.OperationType, transaction.Amount).Scan(&transaction.ID)
 	if err != nil {
 		return mapPostgresError(err)
 	}
-	transaction.EventDate = time.Now()
 	return nil
 }
 
