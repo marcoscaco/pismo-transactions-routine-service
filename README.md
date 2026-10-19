@@ -10,7 +10,7 @@ Requer Docker com o plugin Docker Compose. Na raiz do repositório, inicie a sta
 docker compose up --build
 ```
 
-Aguarde a API ficar disponível em `http://localhost:8080`. Em outro terminal, verifique a resposta com `curl http://localhost:8080/health`. Para encerrar a stack, use `docker compose down`. Para executar a aplicação no host ou consultar outros requisitos, veja [Desenvolvimento local](docs/DEVELOPMENT.md).
+Aguarde a API ficar disponível em `http://localhost:8080` e verifique com `curl http://localhost:8080/health`. Como alternativa aos comandos diretos do Compose, o [Makefile da raiz](Makefile) oferece `make up` para iniciar a stack em segundo plano e `make down` para encerrá-la. Para executar a aplicação no host ou consultar outros requisitos, veja [Desenvolvimento local](docs/DEVELOPMENT.md).
 
 ## Documentação de apoio
 
