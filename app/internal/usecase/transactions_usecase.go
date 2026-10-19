@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"context"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -79,7 +78,6 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 	transaction := &entity.Transaction{
 		AccountID:     accountID,
 		Amount:        amount,
-		EventDate:     time.Now(),
 		OperationType: operationTypeId,
 	}
 

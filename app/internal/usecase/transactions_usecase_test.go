@@ -4,7 +4,6 @@ package usecase
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain"
 	"github.com/marcoscaco/pismo-transactions-routine-service/internal/domain/entity"
@@ -33,7 +32,6 @@ func TestCreateTransaction(t *testing.T) {
 	assert.Equal(t, accountID, transaction.AccountID)
 	assert.Equal(t, amount, transaction.Amount)
 	assert.Equal(t, operationTypeId, transaction.OperationType)
-	assert.WithinDuration(t, time.Now(), transaction.EventDate, time.Second)
 
 	// operacoes 1 2 3 devem diminuir o saldo, entao devem reportar o valor negativo
 	operationTypeId = int64(10)
@@ -43,7 +41,6 @@ func TestCreateTransaction(t *testing.T) {
 	assert.Equal(t, accountID, transaction.AccountID)
 	assert.Equal(t, amount.Neg(), transaction.Amount) // Verifica se o valor é negativo
 	assert.Equal(t, operationTypeId, transaction.OperationType)
-	assert.WithinDuration(t, time.Now(), transaction.EventDate, time.Second)
 
 }
 
