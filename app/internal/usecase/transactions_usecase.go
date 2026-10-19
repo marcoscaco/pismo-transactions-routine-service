@@ -70,6 +70,7 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 		return nil, domain.ErrInvalidOperationTypeID
 	}
 	if operationType.AmountMultiplier != -1 && operationType.AmountMultiplier != 1 {
+		span.RecordError(domain.ErrInvalidOperationMultiplier)
 		return nil, domain.ErrInvalidOperationMultiplier
 	}
 
@@ -84,6 +85,7 @@ func (uc *transactionUseCase) CreateTransaction(ctx context.Context, accountID i
 
 	err = uc.transactionRepository.CreateTransaction(ctx, transaction)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 	return transaction, nil
@@ -95,6 +97,7 @@ func (uc *transactionUseCase) GetTransactionByID(ctx context.Context, transactio
 	defer span.End()
 
 	if transactionID <= 0 {
+		span.RecordError(domain.ErrInvalidTransactionID)
 		return nil, domain.ErrInvalidTransactionID
 	}
 	return uc.transactionRepository.GetTransactionByID(ctx, transactionID)
