@@ -2,7 +2,7 @@
 -- GENERATED ALWAYS AS IDENTITY serve para evitar que inserts manuais sejam feitos na tabela, garantindo que o ID seja sempre gerado pelo banco de dados.
 CREATE TABLE IF NOT EXISTS operation_types (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL UNIQUE,
     amount_multiplier SMALLINT NOT NULL CHECK (amount_multiplier IN (-1, 1)),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
