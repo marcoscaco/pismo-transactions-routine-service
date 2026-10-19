@@ -26,7 +26,7 @@ flowchart LR
     TransactionHandler --> TransactionUseCase[TransactionUseCase]
     AccountUseCase --> AccountsPort[AccountsRepository<br/>contrato do domínio]
     TransactionUseCase --> TransactionsPort[TransactionsRepository<br/>contrato do domínio]
-    TransactionUseCase --> OperationTypesPort[OperationTypeRepository<br/>contrato do caso de uso]
+    TransactionUseCase --> OperationTypesPort[OperationTypeRepository<br/>contrato do domínio]
 
     AccountsAdapter[PostgreSQL AccountRepository] -. implementa .-> AccountsPort
     TransactionsAdapter[PostgreSQL TransactionRepository] -. implementa .-> TransactionsPort
