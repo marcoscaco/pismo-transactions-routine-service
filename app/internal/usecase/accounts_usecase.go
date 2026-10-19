@@ -76,15 +76,18 @@ func (uc *accountUseCase) GetAccountByID(ctx context.Context, id int64) (*entity
 
 	// validar se o ID é válido
 	if id <= 0 {
+		span.RecordError(domain.ErrInvalidAccountID)
 		return nil, domain.ErrInvalidAccountID
 	}
 
 	account, err := uc.accountRepository.GetByID(ctx, id)
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
 	if account == nil {
+		span.RecordError(domain.ErrAccountNotFound)
 		return nil, domain.ErrAccountNotFound
 	}
 
