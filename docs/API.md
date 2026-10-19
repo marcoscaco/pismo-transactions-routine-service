@@ -6,6 +6,10 @@ A API recebe e responde JSON. As rotas são registradas em [`router.go`](../app/
 
 Retorna `200 OK` quando o handler responde:
 
+```bash
+curl -i http://localhost:8080/health
+```
+
 ```json
 {"status":"ok"}
 ```
@@ -22,6 +26,12 @@ Cria uma conta. `document_number` é obrigatório e não pode ser vazio ou conte
 {"document_number":"12345678900"}
 ```
 
+```bash
+curl -i -X POST http://localhost:8080/accounts \
+  -H 'Content-Type: application/json' \
+  -d '{"document_number":"12345678900"}'
+```
+
 **Resposta `201 Created`**
 
 ```json
@@ -35,6 +45,10 @@ Cria uma conta. `document_number` é obrigatório e não pode ser vazio ou conte
 ## `GET /accounts/{id}`
 
 Busca uma conta pelo ID. Em caso de sucesso (`200 OK`), retorna `account_id`, `document_number` e `created_at`, no mesmo formato da criação.
+
+```bash
+curl -i http://localhost:8080/accounts/1
+```
 
 ## `POST /transactions`
 
@@ -50,6 +64,12 @@ Cria uma transação. `account_id` e `operation_type_id` devem ser IDs positivos
 }
 ```
 
+```bash
+curl -i -X POST http://localhost:8080/transactions \
+  -H 'Content-Type: application/json' \
+  -d '{"account_id":1,"operation_type_id":1,"amount":"100"}'
+```
+
 **Resposta `201 Created`**
 
 ```json
@@ -59,6 +79,16 @@ Cria uma transação. `account_id` e `operation_type_id` devem ser IDs positivos
   "amount": "-100"
 }
 ```
+
+**Requisição — crédito (valor numérico também é aceito)**
+
+```bash
+curl -i -X POST http://localhost:8080/transactions \
+  -H 'Content-Type: application/json' \
+  -d '{"account_id":1,"operation_type_id":4,"amount":60.0}'
+```
+
+Resposta: `{"account_id":1,"operation_type_id":4,"amount":"60"}`.
 
 `amount` é representado como string decimal. A resposta não inclui o ID gerado nem a data do evento.
 
