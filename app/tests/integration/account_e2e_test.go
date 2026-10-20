@@ -39,6 +39,67 @@ func TestCreateAccountE2E(t *testing.T) {
 	}
 }
 
+func TestCreateAccountInvalidPayloadE2E(t *testing.T) {
+	baseURL := env.OrDefault("BASE_URL", "http://localhost:8080")
+
+	tests := []struct {
+		name       string
+		body       string
+		wantStatus int
+	}{
+		{
+			name:       "malformed JSON",
+			body:       `{"document_number":`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "empty body",
+			body:       ``,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "document_number has an incompatible type",
+			body:       `{"document_number":12345678900}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "document_number is an empty string",
+			body:       `{"document_number":""}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "document_number is whitespace only",
+			body:       `{"document_number":"   "}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "document_number is missing",
+			body:       `{}`,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodPost, baseURL+"/accounts", bytes.NewBufferString(tt.body))
+			if err != nil {
+				t.Fatalf("create request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("send create account request: %v", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Fatalf("expected status %d for invalid payload, got %d", tt.wantStatus, resp.StatusCode)
+			}
+		})
+	}
+}
+
 func TestQueryAccountE2E(t *testing.T) {
 	baseURL := env.OrDefault("BASE_URL", "http://localhost:8080")
 
@@ -95,5 +156,60 @@ func TestQueryAccountE2E(t *testing.T) {
 	}
 	if account.AccountID != created.AccountID {
 		t.Fatalf("expected account_id %d, got %d", created.AccountID, account.AccountID)
+	}
+}
+
+func TestQueryAccountInvalidE2E(t *testing.T) {
+	baseURL := env.OrDefault("BASE_URL", "http://localhost:8080")
+
+	tests := []struct {
+		name       string
+		accountID  string
+		wantStatus int
+	}{
+		{
+			name:       "non-numeric ID",
+			accountID:  "abc",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "zero ID",
+			accountID:  "0",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "negative ID",
+			accountID:  "-1",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "ID overflows int64",
+			accountID:  "99999999999999999999",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "ID does not exist",
+			accountID:  "999999999",
+			wantStatus: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, baseURL+"/accounts/"+tt.accountID, nil)
+			if err != nil {
+				t.Fatalf("create query request: %v", err)
+			}
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("send query account request: %v", err)
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != tt.wantStatus {
+				t.Fatalf("expected status %d for account ID %q, got %d", tt.wantStatus, tt.accountID, resp.StatusCode)
+			}
+		})
 	}
 }
