@@ -18,7 +18,7 @@ Esse endpoint não verifica a conexão com o PostgreSQL.
 
 ## `POST /accounts`
 
-Cria uma conta. `document_number` é obrigatório e não pode ser vazio ou conter somente espaços em branco. O esquema do banco limita o campo a 11 caracteres; o caso de uso não valida esse limite antes da persistência.
+Cria uma conta. `document_number` é obrigatório e não pode ser vazio ou conter somente espaços em branco. O campo aceita até 14 caracteres, o suficiente para CPF (11 dígitos) ou CNPJ (14 dígitos). O esquema do banco aplica esse limite (`VARCHAR(14)`); o caso de uso não valida o tamanho antes da persistência.
 
 **Requisição**
 
