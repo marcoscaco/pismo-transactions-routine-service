@@ -27,7 +27,7 @@ func (r *AccountRepository) Create(ctx context.Context, account *entity.Account)
 	query := "INSERT INTO accounts (document_number) VALUES ($1) RETURNING id, created_at"
 	err := r.db.QueryRowContext(ctx, query, account.Document).Scan(&account.ID, &account.CreatedAt)
 	if err != nil {
-		return err
+		return mapPostgresError(err)
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func (r *AccountRepository) GetByID(ctx context.Context, id int64) (*entity.Acco
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrAccountNotFound
 		}
-		return nil, err
+		return nil, mapPostgresError(err)
 	}
 	return account, nil
 }

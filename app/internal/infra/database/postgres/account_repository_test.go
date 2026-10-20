@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"regexp"
 	"testing"
 	"time"
@@ -30,5 +31,26 @@ func TestAccountRepositoryCreate_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(1), account.ID)
 	assert.Equal(t, createdAt, account.CreatedAt)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAccountRepositoryCreate_DatabaseError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer db.Close()
+
+	dbErr := errors.New("connection refused")
+	mock.ExpectQuery(regexp.QuoteMeta("INSERT INTO accounts (document_number) VALUES ($1) RETURNING id, created_at")).
+		WithArgs("12345678900").
+		WillReturnError(dbErr)
+
+	repo := NewAccountRepository(db)
+	account := &entity.Account{Document: "12345678900"}
+
+	err = repo.Create(context.Background(), account)
+
+	require.ErrorIs(t, err, dbErr)
+	assert.Zero(t, account.ID)
+	assert.True(t, account.CreatedAt.IsZero())
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
