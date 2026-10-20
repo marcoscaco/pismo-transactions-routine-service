@@ -4,13 +4,15 @@ API HTTP em Go para criar e consultar contas e registrar transações, com persi
 
 ## Início rápido
 
-Requer Docker com o plugin Docker Compose. Na raiz do repositório, inicie a stack:
+Requer Docker (ou Podman) com o plugin Compose. Na raiz do repositório, inicie a stack com o script:
 
 ```bash
-docker compose up --build
+./run.sh
 ```
 
-Aguarde a API ficar disponível em `http://localhost:8080` e verifique com `curl http://localhost:8080/health`. Como alternativa aos comandos diretos do Compose, o [Makefile da raiz](Makefile) oferece `make up` para iniciar a stack em segundo plano e `make down` para encerrá-la. Para executar a aplicação no host ou consultar outros requisitos, veja [Desenvolvimento local](docs/DEVELOPMENT.md).
+O script usa `make up` quando o `make` está disponível e, caso contrário, `podman compose` ou `docker compose`, sempre em segundo plano. Aguarde a API ficar disponível em `http://localhost:8080` e verifique com `curl http://localhost:8080/health`.
+
+Para encerrar a stack, use `make down`. Para executar a aplicação no host ou consultar outros requisitos, veja [Desenvolvimento local](docs/DEVELOPMENT.md).
 
 ## Documentação de apoio
 

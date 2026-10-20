@@ -10,6 +10,8 @@ compose-up:
 
 up: compose-up
 
+start: up
+
 observability:
 	@# Detect podman or fallback to docker
 	@cmd=$$(command -v podman >/dev/null 2>&1 && echo podman || echo docker); \
@@ -21,6 +23,8 @@ compose-down:
 	$$cmd compose down
 
 down: compose-down
+
+stop: down
 
 remove:
 	@# Detect podman or fallback to docker

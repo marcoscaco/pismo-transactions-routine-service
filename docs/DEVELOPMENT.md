@@ -8,23 +8,36 @@ Este guia reúne os requisitos, opções de execução e comandos de desenvolvim
 - Docker com o plugin Docker Compose para banco, migrações e serviços auxiliares.
 - `make` é opcional; fornece atalhos definidos no [`Makefile` da raiz](../Makefile).
 
-## Executar a API no host
+## Iniciar a stack completa com `run.sh`
 
-Na raiz do repositório, suba os serviços necessários e aplique o esquema:
+Na raiz do repositório:
 
 ```bash
-docker compose up -d postgres otel-collector prometheus jaeger grafana cloudbeaver
-docker compose run --rm migrations
+./run.sh
 ```
 
-Depois, ainda na raiz do repositório, execute:
+O script inicia todos os serviços do Compose em segundo plano, com build. Ele usa `make up` quando o `make` está instalado; caso contrário, usa `podman compose` ou `docker compose`, nessa ordem de preferência. Se nenhum deles estiver disponível, encerra com erro.
+
+Para parar a stack, use `make down`.
+
+## Executar a API no host
+
+Use este modo para rodar o código Go direto na sua máquina, com o restante da infraestrutura no Compose. Na raiz do repositório, execute:
+
+```bash
+make run-local
+```
+
+O alvo sobe os serviços de observabilidade e o PostgreSQL, e então executa `go run ./cmd` dentro de `app/`. Como o processo roda no host, as variáveis de conexão precisam apontar para `localhost`. Se preferir definir manualmente, use:
 
 ```bash
 DB_HOST=localhost \
 OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 \
 OTEL_EXPORTER_OTLP_INSECURE=true \
-make run
+make run-local
 ```
+
+Caso o esquema ainda não esteja aplicado no banco, rode as migrações antes com `make migrate`.
 
 O serviço `api` do Compose configura `DB_HOST=postgres` para usar o DNS da rede Docker. A execução no host usa `localhost` para alcançar a porta publicada do PostgreSQL.
 
@@ -60,7 +73,9 @@ Execute os alvos `make` a partir da raiz do repositório. O comando Go direto de
 | `make test-e2e` | raiz | Sobe a stack local, executa com a build tag `e2e` e chama `make down` ao final, mesmo se o teste falhar. |
 | `make fmt` | raiz | Formata os pacotes Go. |
 | `make tidy` | raiz | Atualiza as dependências. |
-| `make run` | raiz | Inicia a aplicação. |
+| `./run.sh` | raiz | Inicia a stack completa em segundo plano (equivale a `make run`). |
+| `make run` | raiz | Equivale a `make up`: sobe a stack do Compose em segundo plano. |
+| `make run-local` | raiz | Sobe a infraestrutura e executa a API no host com `go run`. |
 
 O teste E2E faz uma requisição HTTP real a `GET /health`. O alvo encerra os containers e a rede ao final; o volume persistente do PostgreSQL é mantido. `BASE_URL` pode ser sobrescrito, mas o alvo ainda inicia e encerra a stack local.
 
